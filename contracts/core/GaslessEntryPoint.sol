@@ -204,9 +204,8 @@ contract GaslessEntryPoint is IGaslessEntryPoint, StakeManager {
             paymasterInfo.deposit = uint112(deposit - requiredPreFund);
 
             // verify if paymaster is willing to pay gas fee
-            uint256 gas = mUserOp.verificationGasLimit;
             try
-                IGaslessPaymaster(paymaster).validatePaymasterUserOp{gas : gas}(op)
+                IGaslessPaymaster(paymaster).validatePaymasterUserOp{gas : mUserOp.verificationGasLimit}(op)
             returns (bytes memory _context, uint256 _deadline) {
                 // solhint-disable-next-line not-rely-on-time
                 if (_deadline != 0 && _deadline < block.timestamp) {
@@ -329,6 +328,7 @@ contract GaslessEntryPoint is IGaslessEntryPoint, StakeManager {
     unchecked {
         // when using a Paymaster, the verificationGasLimit is used also to as a limit for the postOp call.
         // our security model might call postOp eventually twice
+        // so the verificationGasLimit shoud x3 times 
         uint256 mul = 3;
         uint256 requiredGas = mUserOp.callGasLimit + mUserOp.verificationGasLimit * mul;
 
