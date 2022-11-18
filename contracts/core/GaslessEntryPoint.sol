@@ -17,7 +17,7 @@ import "./StakeManager.sol";
 contract GaslessEntryPoint is IGaslessEntryPoint, StakeManager {
     //a memory copy of UserOp fields (except that dynamic byte arrays: callData
     struct MemoryUserOp {
-        address callee;
+        address callContract;
         address paymaster;
         uint256 callGasLimit;
 	    uint256 verificationGasLimit;
@@ -116,9 +116,9 @@ contract GaslessEntryPoint is IGaslessEntryPoint, StakeManager {
 
         IGaslessPaymaster.PostOpMode mode = IGaslessPaymaster.PostOpMode.opSucceeded;
         if (callData.length > 0) {
-            address callee = opInfo.mUserOp.callee;
+            address callContract = opInfo.mUserOp.callContract;
             uint256 callGasLimit = opInfo.mUserOp.callGasLimit;
-            (bool success, bytes memory result) = address(callee).call{gas: callGasLimit}(callData);
+            (bool success, bytes memory result) = address(callContract).call{gas: callGasLimit}(callData);
             if (!success) {
                 if (result.length > 0) {
                     emit UserOperationRevertReason(msg.sender, result);
@@ -140,7 +140,7 @@ contract GaslessEntryPoint is IGaslessEntryPoint, StakeManager {
         UserOperation calldata userOp,
         MemoryUserOp memory mUserOp
     ) internal pure {
-        mUserOp.callee = userOp.callee;
+        mUserOp.callContract = userOp.callContract;
         mUserOp.callGasLimit = userOp.callGasLimit;
 	    mUserOp.verificationGasLimit = userOp.verificationGasLimit;
         mUserOp.maxFeePerGas = userOp.maxFeePerGas;

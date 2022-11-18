@@ -5,9 +5,9 @@ pragma solidity ^0.8.12;
 
     /**
      * User Operation struct
-     * @param callee the contract address user wants to call execution.
-     * @param callData the method call to execute on callee contract.
-     * @param callGasLimit the max gas limit for method call to execute on callee contract.
+     * @param callContract the contract address user wants to call execution.
+     * @param callData the method call to execute on callContract contract.
+     * @param callGasLimit the max gas limit for method call to execute on callContract contract.
      * @param verificationGasLimit gas used for validateUserOp and validatePaymasterUserOp
      * @param maxFeePerGas same as EIP-1559 gas parameter
      * @param maxPriorityFeePerGas same as EIP-1559 gas parameter
@@ -15,12 +15,12 @@ pragma solidity ^0.8.12;
      */
     struct UserOperation {
 
-	address callee;
+	    address callContract;
         bytes callData;
-	uint256 callGasLimit;
-	uint256 verificationGasLimit;
+	    uint256 callGasLimit;
+	    uint256 verificationGasLimit;
         uint256 maxFeePerGas;
-	uint256 maxPriorityFeePerGas;
+	    uint256 maxPriorityFeePerGas;
         bytes paymasterAndData;
     }
 
