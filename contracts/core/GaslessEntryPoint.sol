@@ -236,6 +236,9 @@ contract GaslessEntryPoint is IGaslessEntryPoint, StakeManager {
         MemoryUserOp memory mUserOp = outOpInfo.mUserOp;
         _copyUserOpToMemory(userOp, mUserOp);
 
+        // validate gas price
+        require(tx.gasprice == 0, "gas price must be 0");
+
         // validate all numeric values in userOp are well below 128 bit, so they can safely be added
         // and multiplied without causing overflow
         uint256 maxGasValues = userOp.maxFeePerGas |
