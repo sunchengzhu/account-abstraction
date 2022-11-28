@@ -16,7 +16,7 @@ import {
 import { fillAndSign } from './UserOp'
 import { arrayify, hexConcat, parseEther } from 'ethers/lib/utils'
 
-describe('EntryPoint with VerifyingPaymaster', function () {
+describe.skip('EntryPoint with VerifyingPaymaster', function () {
   let entryPoint: EntryPoint
   let entryPointStatic: EntryPoint
   let walletOwner: Wallet

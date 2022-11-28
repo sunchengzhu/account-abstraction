@@ -1,12 +1,13 @@
 import { ethers } from 'hardhat'
 import { arrayify, defaultAbiCoder, getCreate2Address, hexConcat, keccak256, parseEther } from 'ethers/lib/utils'
 import { BigNumber, BigNumberish, Contract, ContractReceipt, Wallet } from 'ethers'
-import { EntryPoint, EntryPoint__factory, IEntryPoint, IERC20, SimpleWallet__factory, TestAggregatedWallet__factory } from '../typechain'
+import { DummyContract__factory, EntryPoint, EntryPoint__factory, GaslessEntryPoint, GaslessEntryPoint__factory, IEntryPoint, IERC20, SimpleWallet__factory, TestAggregatedWallet__factory } from '../typechain'
 import { BytesLike, hexValue } from '@ethersproject/bytes'
 import { expect } from 'chai'
 import { Create2Factory } from '../src/Create2Factory'
 import { debugTransaction } from './debugTx'
 import { UserOperation } from './UserOperation'
+import { Address } from 'ethereumjs-util'
 
 export const AddressZero = ethers.constants.AddressZero
 export const HashZero = ethers.constants.HashZero
@@ -244,6 +245,16 @@ export async function deployEntryPoint (paymasterStake: BigNumberish, unstakeDel
 
   const addr = await create2factory.deploy(hexConcat([epf.bytecode, ctrParams]), 0)
   return EntryPoint__factory.connect(addr, provider.getSigner())
+}
+
+export async function deployGaslessEntryPoint (fullnodeMiner: string, paymasterStake: BigNumberish, unstakeDelaySecs: BigNumberish, provider = ethers.provider): Promise<GaslessEntryPoint> {
+  const create2factory = new Create2Factory(provider)
+  const epf = new GaslessEntryPoint__factory(provider.getSigner())
+  const ctrParams = defaultAbiCoder.encode(['address', 'uint256', 'uint256'],
+    [fullnodeMiner, paymasterStake, unstakeDelaySecs])
+
+  const addr = await create2factory.deploy(hexConcat([epf.bytecode, ctrParams]), 0)
+  return GaslessEntryPoint__factory.connect(addr, provider.getSigner())
 }
 
 export async function isDeployed (addr: string): Promise<boolean> {

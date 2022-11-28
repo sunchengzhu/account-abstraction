@@ -21,7 +21,7 @@ import {
 import { fillAndSign } from './UserOp'
 import { hexConcat, hexZeroPad, parseEther } from 'ethers/lib/utils'
 
-describe('DepositPaymaster', () => {
+describe.skip('DepositPaymaster', () => {
   let entryPoint: EntryPoint
   let entryPointStatic: EntryPoint
   const ethersSigner = ethers.provider.getSigner()

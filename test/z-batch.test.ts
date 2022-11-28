@@ -28,7 +28,7 @@ import { ethers } from 'hardhat'
 import { toBuffer } from 'ethereumjs-util'
 import { defaultAbiCoder } from 'ethers/lib/utils'
 
-describe('Batch gas testing', function () {
+describe.skip('Batch gas testing', function () {
   // this test is currently useless. client need to do better work with preVerificationGas calculation.
   // we do need a better recommendation for bundlers how to validate those values before accepting a request.
   return

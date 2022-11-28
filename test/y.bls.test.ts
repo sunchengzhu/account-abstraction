@@ -19,7 +19,7 @@ import { BytesLike } from '@ethersproject/bytes'
 import { BLSWalletDeployer } from '../typechain/contracts/bls/BLSWallet.sol'
 import { BLSWalletDeployer__factory } from '../typechain/factories/contracts/bls/BLSWallet.sol'
 
-describe('bls wallet', function () {
+describe.skip('bls wallet', function () {
   this.timeout(20000)
   const BLS_DOMAIN = arrayify(keccak256(Buffer.from('eip4337.bls.domain')))
   const etherSigner = ethers.provider.getSigner()
