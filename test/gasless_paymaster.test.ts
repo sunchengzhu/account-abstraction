@@ -66,7 +66,7 @@ describe('EntryPoint with VerifyingPaymaster', function () {
       entryPoint.connect(whitelistUser)
 
       // Should be OK
-      const res = await entryPoint.handleOp(userOp, {gasLimit: 100000, gasPrice: 0}) // FIXME: How to set 0 gas price?
+      const res = await entryPoint.handleOp(userOp, {gasLimit: 100000, gasPrice: 0})
     })
     it('invalid user', async () => {
       // Mock UserOp
@@ -84,7 +84,7 @@ describe('EntryPoint with VerifyingPaymaster', function () {
       entryPoint.connect(invalidUser)
 
       // Should be OK
-      const res = await entryPoint.handleOp(userOp, {gasLimit: 100000}) // FIXME: How to set 0 gas price?
+      const res = await entryPoint.handleOp(userOp, {gasLimit: 100000, gasPrice: 0})
 
     })
   })
