@@ -54,12 +54,17 @@ const config: HardhatUserConfig = {
     localgeth: { url: 'http://localgeth:8545' },
     goerli: getNetwork('goerli'),
     proxy: getNetwork1('http://localhost:8545'),
-    kovan: getNetwork('kovan')
+    kovan: getNetwork('kovan'),
+    hardhat: {
+      gasPrice: 0,
+      gas: "auto",
+      gasMultiplier: 0,
+      initialBaseFeePerGas: 0,
+    }
   },
   mocha: {
     timeout: 10000
   },
-
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY
   }

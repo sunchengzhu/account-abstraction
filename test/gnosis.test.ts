@@ -26,7 +26,7 @@ import { defaultAbiCoder, hexConcat, hexValue, hexZeroPad, parseEther } from 'et
 import { expect } from 'chai'
 import { Create2Factory } from '../src/Create2Factory'
 
-describe('Gnosis Proxy', function () {
+describe.skip('Gnosis Proxy', function () {
   this.timeout(30000)
 
   let ethersSigner: Signer

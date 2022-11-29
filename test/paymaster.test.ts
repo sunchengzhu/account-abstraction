@@ -31,7 +31,7 @@ import { hexConcat, parseEther } from 'ethers/lib/utils'
 import { UserOperation } from './UserOperation'
 import { hexValue } from '@ethersproject/bytes'
 
-describe('EntryPoint with paymaster', function () {
+describe.skip('EntryPoint with paymaster', function () {
   let entryPoint: EntryPoint
   let walletOwner: Wallet
   const ethersSigner = ethers.provider.getSigner()

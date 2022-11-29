@@ -43,7 +43,7 @@ import {
 } from '../typechain/factories/contracts/samples/TestSignatureAggregator__factory'
 import { TestAggregatedWallet__factory } from '../typechain/factories/contracts/samples/TestAggregatedWallet__factory'
 
-describe('EntryPoint', function () {
+describe.skip('EntryPoint', function () {
   let entryPoint: EntryPoint
   let entryPointView: EntryPoint
 

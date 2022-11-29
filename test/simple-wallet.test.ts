@@ -13,7 +13,7 @@ import { fillUserOpDefaults, getRequestId, packUserOp, signUserOp } from './User
 import { parseEther } from 'ethers/lib/utils'
 import { UserOperation } from './UserOperation'
 
-describe('SimpleWallet', function () {
+describe.skip('SimpleWallet', function () {
   const entryPoint = '0x'.padEnd(42, '2')
   let accounts: string[]
   let testUtil: TestUtil
