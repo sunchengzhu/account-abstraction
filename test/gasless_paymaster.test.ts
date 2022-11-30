@@ -60,9 +60,19 @@ describe('EntryPoint with VerifyingPaymaster', function () {
           maxPriorityFeePerGas: 1,
           paymasterAndData: hexConcat([paymaster.address, "0x1234"])
       }
+
+      // init state
+      const initSum = await dummyContract.sum()
+      expect(initSum).to.equal(1)
       
       // Send tx with a valid user.
-      await entryPoint.connect(whitelistUser).handleOp(userOp, {gasLimit: 100000, gasPrice: 0})
+      const tx = await entryPoint.connect(whitelistUser).handleOp(userOp, {gasLimit: 100000, gasPrice: 0})
+      await tx.wait()
+
+      // check state changed
+      const sum = await dummyContract.sum()
+      expect(sum).to.equal(2) 
+      
     })
     it('invalid user', async () => {
       // Mock UserOp
