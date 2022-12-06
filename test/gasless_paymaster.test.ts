@@ -25,7 +25,7 @@ describe('EntryPoint with VerifyingPaymaster', function () {
 
   let paymaster: GaslessDemoPaymaster
   const fullnode: Wallet = createWalletOwner()
-  before(async function () {
+  beforeEach(async function () {
     const DummyContract = await ethers.getContractFactory("DummyContract")
     dummyContract = await DummyContract.deploy()
     console.log(`Deploy dummy contract: ${dummyContract.address}`)
@@ -73,6 +73,42 @@ describe('EntryPoint with VerifyingPaymaster', function () {
       const sum = await dummyContract.sum()
       expect(sum).to.equal(2) 
       
+    })
+    it('whitelist valid with plain tx', async () => {
+      // Mock UserOp
+      const userOp: UserOperationStruct = {
+          callContract: dummyContract.address,
+          callData,
+          callGasLimit: 10000,
+          verificationGasLimit: 1000000,
+          maxFeePerGas: 1,
+          maxPriorityFeePerGas: 1,
+          paymasterAndData: hexConcat([paymaster.address, "0x1234"])
+      }
+
+      // init state
+      const initSum = await dummyContract.sum()
+      expect(initSum).to.equal(1)
+      
+      // construct plain tx
+      const abiCoder = new ethers.utils.AbiCoder();
+      const payload = abiCoder.encode(["tuple(address callContract, bytes callData, uint256 callGasLimit, uint256 verificationGasLimit, uint256 maxFeePerGas, uint256 maxPriorityFeePerGas, bytes paymasterAndData) UserOperation"], [userOp])
+
+      const plainTx = {
+        from: whitelistUser.address,
+        to: entryPoint.address,
+        data: payload,
+        gasPrice: 0,
+        gasLimit: 1000000,
+        value: 0,
+      }
+      const signer = entryPoint.connect(whitelistUser).signer;
+      const tx = await signer.sendTransaction(plainTx);
+      await tx.wait()
+
+      // check state changed
+      const sum = await dummyContract.sum()
+      expect(sum).to.equal(2) 
     })
     it('invalid user', async () => {
       // Mock UserOp
