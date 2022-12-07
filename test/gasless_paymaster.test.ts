@@ -74,6 +74,37 @@ describe('EntryPoint with VerifyingPaymaster', function () {
       expect(sum).to.equal(2) 
       
     })
+
+    it('whitelist valid with fallback', async () => {
+      // Mock UserOp
+      const userOp: UserOperationStruct = {
+        callContract: dummyContract.address,
+        callData,
+        callGasLimit: 10000,
+        verificationGasLimit: 1000000,
+        maxFeePerGas: 1,
+        maxPriorityFeePerGas: 1,
+        paymasterAndData: hexConcat([paymaster.address, "0x1234"])
+      }
+
+      // init state
+      const initSum = await dummyContract.sum()
+      expect(initSum).to.equal(1)
+
+      // Send tx with a valid user without function selector(which should use fallback).
+      const pTx = await entryPoint.connect(whitelistUser).populateTransaction.handleOp(userOp, {gasLimit: 100000, gasPrice: 0})
+      // remove the function selector to use fallback
+      const gaslessPayloadBytes = "0x" + pTx.data?.slice(10);
+      const tx = {...pTx, ...{data: gaslessPayloadBytes}};
+      console.log(`send gasless tx without function selector, transaction =>`, tx);
+      const txResponse = await entryPoint.connect(whitelistUser).signer.sendTransaction(tx);
+      await txResponse.wait()
+      // check state changed
+      const sum = await dummyContract.sum()
+      expect(sum).to.equal(2) 
+      
+    })
+
     it('whitelist valid with plain tx', async () => {
       // Mock UserOp
       const userOp: UserOperationStruct = {
@@ -110,7 +141,9 @@ describe('EntryPoint with VerifyingPaymaster', function () {
       const sum = await dummyContract.sum()
       expect(sum).to.equal(2) 
     })
+    
     it('invalid user', async () => {
+      
       // Mock UserOp
       const userOp: UserOperationStruct = {
           callContract: dummyContract.address,
