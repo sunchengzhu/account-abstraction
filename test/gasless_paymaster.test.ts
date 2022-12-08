@@ -70,7 +70,6 @@ describe('Gasless EntryPoint with whitelist paymaster', function () {
           maxPriorityFeePerGas: 1,
           paymasterAndData: hexConcat([paymaster.address, "0x1234"])
       }
-      console.log(`userOp: ${JSON.stringify(userOp, null, 2)}`)
 
       // init state
       const initSum = await dummyContract.sum()
@@ -89,7 +88,7 @@ describe('Gasless EntryPoint with whitelist paymaster', function () {
       const depositChange = depositBefore.toBigInt() - depositAfter.toBigInt()
       console.log(`deposit before: ${depositBefore}, after: ${depositAfter}, change: ${depositChange}`)
     })
-    it.skip('whitelist valid with plain tx', async () => {
+    it('whitelist valid with plain tx', async () => {
       // Mock UserOp
       const userOp: UserOperationStruct = {
           callContract: dummyContract.address,
@@ -107,7 +106,8 @@ describe('Gasless EntryPoint with whitelist paymaster', function () {
       
       // construct plain tx
       const abiCoder = new ethers.utils.AbiCoder();
-      const payload = abiCoder.encode(["tuple(address callContract, bytes callData, uint256 callGasLimit, uint256 verificationGasLimit, uint256 maxFeePerGas, uint256 maxPriorityFeePerGas, bytes paymasterAndData) UserOperation"], [userOp])
+      let payload = abiCoder.encode(["tuple(address callContract, bytes callData, uint256 callGasLimit, uint256 verificationGasLimit, uint256 maxFeePerGas, uint256 maxPriorityFeePerGas, bytes paymasterAndData) UserOperation"], [userOp])
+      payload = '0xfb4350d8' + payload.slice(2)
 
       const plainTx = {
         from: whitelistUser.address,
@@ -117,12 +117,14 @@ describe('Gasless EntryPoint with whitelist paymaster', function () {
         gasLimit: 1000000,
         value: 0,
       }
-      const signer = entryPoint.connect(whitelistUser).signer;
-      const tx = await signer.sendTransaction(plainTx);
+      //const signer = entryPoint.connect(whitelistUser).signer;
+      const tx = await whitelistUser.sendTransaction(plainTx);
       await tx.wait()
 
       // check state changed
-      const sum = await dummyContract.sum()
+      expect(await dummyContract.sum()).to.equal(2)
+
+      const sum: BigNumber = await dummyContract.sum()
       expect(sum).to.equal(2) 
     })
     
@@ -146,18 +148,15 @@ describe('Gasless EntryPoint with whitelist paymaster', function () {
           .handleOp(userOp, {gasLimit: 100000, gasPrice: 0})
       ).to.be.revertedWithCustomError(entryPoint, "FailedOp")
       .withArgs(paymaster.address, "Verifying user in whitelist.")
-      //).to.revertedWith(`FailedOp(${paymaster.address}, ${"Verifying user in whitelist."})`)
     })
   })
   describe('ERC-20', () => {
     //TODO
   })
-  describe.skip('#Deposit-Withdrawal', () => {
+  describe('#Deposit-Withdrawal', () => {
     it('deposit', async () => {
       let depositInfo = await entryPoint.getDepositInfo(paymaster.address)
       console.log(`deposit info: ${depositInfo}`)
-      await paymaster.addStake(99999999, { value: parseEther('0.02') })
-      await entryPoint.depositTo(paymaster.address, { value: parseEther('0.01') })
       depositInfo = await entryPoint.getDepositInfo(paymaster.address)
       console.log(`deposit info: ${depositInfo}`)
       await entryPoint.withdrawTo(paymaster.address, 1, {gasLimit: 22000, gasPrice: 0})
