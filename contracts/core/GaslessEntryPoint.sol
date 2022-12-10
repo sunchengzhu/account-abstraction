@@ -52,14 +52,6 @@ contract GaslessEntryPoint is IGaslessEntryPoint, StakeManager {
         GW_FULL_NODE = _gwFullNodeMiner;
     }
 
-    // todo: maybe add function signature into Gasless Payload(tx.data) to remove fallback
-    // use non-payable fallback for handleOp, since Gasless Payload doesn't contains func signature
-    fallback (bytes calldata input) external returns (bytes memory exitCode) {
-        (UserOperation memory userOp) = abi.decode(input, (UserOperation));
-        this.handleOp(userOp);
-        exitCode = "0";
-    }
-
     /**
      * Execute a UserOperation.
      * @param op the operations to execute
