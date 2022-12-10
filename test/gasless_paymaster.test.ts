@@ -1,11 +1,10 @@
 import { BigNumber, Contract, ContractFactory, Wallet } from 'ethers'
-import { ethers } from 'hardhat'
+import { ethers, network } from 'hardhat'
 import {
   GaslessEntryPoint,
   GaslessDemoPaymaster,
   GaslessDemoPaymaster__factory,
   DummyContract,
-  ERC20,
 } from '../typechain'
 import {
   createWalletOwner,
@@ -154,43 +153,46 @@ describe('Gasless EntryPoint with whitelist paymaster', function () {
       .withArgs(paymaster.address, "Verifying user in whitelist.")
     })
   })
-  describe('transfer ERC-20', () => {
-    let erc20: Contract
-    let sender: Wallet
-    let receiver: Wallet
-    let amount: BigNumber
-    beforeEach(async function () {
-      let bin = await readFile('erc20/ERC20Proxy.bin', 'utf8');
-      bin = bin.trim().replace('\n', '')
-      const Erc20 = new ContractFactory(abi, bin, walletOwner);
-      erc20 = await Erc20.deploy("DemoErc", "Erc20", BigNumber.from(9876543210), 1, 8)
-      console.log(`Sudt erc20 proxy addr: ${erc20.address}`)
-      sender = new ethers.Wallet(ethers.Wallet.createRandom().privateKey, walletOwner.provider)
-      receiver = new ethers.Wallet(ethers.Wallet.createRandom().privateKey, walletOwner.provider)
-      console.log(`Create target account: ${sender.address}`)
-      expect(await erc20.callStatic.balanceOf(sender.address)).to.equal(0)
-      expect(await erc20.callStatic.balanceOf(receiver.address)).to.equal(0)
-      amount = parseEther('0.0001')
+
+  if(network.name === "gw_devnet_v1"){
+    describe('transfer ERC-20', () => {
+      let erc20: Contract
+      let sender: Wallet
+      let receiver: Wallet
+      let amount: BigNumber
+      beforeEach(async function () {
+        let bin = await readFile('erc20/ERC20Proxy.bin', 'utf8');
+        bin = bin.trim().replace('\n', '')
+        const Erc20 = new ContractFactory(abi, bin, walletOwner);
+        erc20 = await Erc20.deploy("DemoErc", "Erc20", BigNumber.from(9876543210), 1, 8)
+        console.log(`Sudt erc20 proxy addr: ${erc20.address}`)
+        sender = new ethers.Wallet(ethers.Wallet.createRandom().privateKey, walletOwner.provider)
+        receiver = new ethers.Wallet(ethers.Wallet.createRandom().privateKey, walletOwner.provider)
+        console.log(`Create target account: ${sender.address}`)
+        expect(await erc20.callStatic.balanceOf(sender.address)).to.equal(0)
+        expect(await erc20.callStatic.balanceOf(receiver.address)).to.equal(0)
+        amount = parseEther('0.0001')
+      })
+      it('without gasless', async () => {
+        await expect(erc20.connect(sender).transfer(sender.address, amount)).to.rejectedWith(Error)
+      })
+      it('with gasless', async () => {
+        const rawTx = await erc20.connect(sender).populateTransaction.transfer(receiver.address, amount)
+        const callData: string = rawTx.data || ''
+        const userOp: UserOperationStruct = {
+            callContract: erc20.address,
+            callData,
+            callGasLimit: 100000,
+            verificationGasLimit: 100000,
+            maxFeePerGas: 1,
+            maxPriorityFeePerGas: 1,
+            paymasterAndData: hexConcat([paymaster.address, "0x1234"])
+        }
+        await paymaster.addWhitelistAddress(sender.address)
+        const tx = await entryPoint.connect(sender).handleOp(userOp, {gasLimit: 400000, gasPrice: 0})
+        await tx.wait()
+        expect(await erc20.callStatic.balanceOf(receiver.address)).to.equal(amount)
+      })
     })
-    it('without gasless', async () => {
-      await expect(erc20.connect(sender).transfer(sender.address, amount)).to.rejectedWith(Error)
-    })
-    it('with gasless', async () => {
-      const rawTx = await erc20.connect(sender).populateTransaction.transfer(receiver.address, amount)
-      const callData: string = rawTx.data || ''
-      const userOp: UserOperationStruct = {
-          callContract: erc20.address,
-          callData,
-          callGasLimit: 100000,
-          verificationGasLimit: 100000,
-          maxFeePerGas: 1,
-          maxPriorityFeePerGas: 1,
-          paymasterAndData: hexConcat([paymaster.address, "0x1234"])
-      }
-      await paymaster.addWhitelistAddress(sender.address)
-      const tx = await entryPoint.connect(sender).handleOp(userOp, {gasLimit: 400000, gasPrice: 0})
-      await tx.wait()
-      expect(await erc20.callStatic.balanceOf(receiver.address)).to.equal(amount)
-    })
-  })
+  }
 })
