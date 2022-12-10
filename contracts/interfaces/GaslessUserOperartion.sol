@@ -14,13 +14,12 @@ pragma solidity ^0.8.12;
      * @param paymasterAndData if set, this field hold the paymaster address and "paymaster-specific-data". the paymaster will pay for the transaction instead of the sender
      */
     struct UserOperation {
-
-	    address callContract;
+        address callContract;
         bytes callData;
-	    uint256 callGasLimit;
-	    uint256 verificationGasLimit;
+	uint256 callGasLimit;
+	uint256 verificationGasLimit;
         uint256 maxFeePerGas;
-	    uint256 maxPriorityFeePerGas;
+        uint256 maxPriorityFeePerGas;
         bytes paymasterAndData;
     }
 
