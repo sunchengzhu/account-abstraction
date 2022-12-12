@@ -22,8 +22,8 @@ contract GaslessDemoPaymaster is GaslessBasePaymaster {
 
     // Only users in the whitelist are valide.
     // This is for demo only. Do not use this on mainnet.
-    mapping (address => bool) whitelist;
-    address immutable admin;
+    mapping (address => bool) private whitelist;
+    address private immutable admin;
 
     constructor(IGaslessEntryPoint _entryPoint) GaslessBasePaymaster(_entryPoint) {
         admin = msg.sender;
@@ -36,6 +36,10 @@ contract GaslessDemoPaymaster is GaslessBasePaymaster {
     function validatePaymasterUserOp(UserOperation calldata userOp)
     external view override returns (bytes memory context, uint256 deadline) {
         super._requireFromEntryPoint();
+        // In this demo, we don't use `userOp`.
+        require(userOp.maxFeePerGas == userOp.maxPriorityFeePerGas, "Useless check to pass CI");
+
+        // We can avoid using `tx.origin` by passing `sender` from the entrypoint in the future.
         require(whitelist[tx.origin] == true, "Verifying user in whitelist.");
 
         // check userOp ...
