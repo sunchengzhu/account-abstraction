@@ -9,7 +9,7 @@
     "lint": "yarn compile && yarn run lint:sol && yarn run lint:js ",
     "lint:js": "eslint -f unix .",
     "lint-fix": "eslint -f unix . --fix",
-    "lint:sol": "solhint -f unix \"contracts/**/*.sol\" --max-warnings 0",
+    "lint:sol": "solhint -f unix \"contracts/**/*.sol\" --max-warnings 1",
     "gas-calc": "./scripts/gascalc",
     "mocha-gascalc": "TS_NODE_TRANSPILE_ONLY=1 npx ts-mocha --bail gascalc/*",
     "test": "./scripts/hh-wrapper test",
