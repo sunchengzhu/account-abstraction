@@ -86,8 +86,8 @@ describe('Gasless EntryPoint with whitelist paymaster', function () {
       const userOp: UserOperationStruct = {
         callContract: dummyContract.address,
         callData: dummyContractCallData,
-        callGasLimit: 1000000,
-        verificationGasLimit: 1000000,
+        callGasLimit: 100000,
+        verificationGasLimit: 100000,
         maxFeePerGas: 1,
         maxPriorityFeePerGas: 1,
         paymasterAndData: hexConcat([paymaster.address, '0x1234'])
@@ -125,24 +125,23 @@ describe('Gasless EntryPoint with whitelist paymaster', function () {
       const userOp: UserOperationStruct = {
         callContract: dummyContract.address,
         callData: dummyContractCallData,
-        callGasLimit: 10000,
-        verificationGasLimit: 10000,
+        callGasLimit: 100000,
+        verificationGasLimit: 100000,
         maxFeePerGas: 1,
         maxPriorityFeePerGas: 1,
         paymasterAndData: hexConcat([paymaster.address, '0x1234'])
       }
       // Send tx with a invalid user.
-      await expect(
-        entryPoint
+      await expect(entryPoint
           .connect(invalidUser)
           .callStatic
-          .handleOp(userOp, { gasLimit: 100000, gasPrice: 0 })
+          .handleOp(userOp, { gasLimit: 400000, gasPrice: 0 })
       ).to.be.revertedWithCustomError(entryPoint, 'FailedOp')
         .withArgs(paymaster.address, 'Verifying user in whitelist.')
     })
   })
 
-  if (network.name === 'gw_devnet_v1') {
+  if (network.name === 'gw_devnet_v1' || network.name === 'gw_alphanet_v1') {
     describe('transfer ERC-20', () => {
       let erc20: Contract
       let sender: Wallet
