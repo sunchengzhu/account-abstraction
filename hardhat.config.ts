@@ -71,6 +71,11 @@ const config: HardhatUserConfig = {
       url: 'http://localhost:8024/instant-finality-hack',
       accounts: [`0x${TEST_PK1}`, `0x${TEST_PK2}`, `0x${TEST_PK3}`, `${PRIVATE_KEY0}`, `${PRIVATE_KEY1}`]
     },
+    gw_alphanet_v1: { // for internal testing
+      url: `https://gw-alphanet-v1.godwoken.cf/instant-finality-hack`,
+      accounts: [`0x${TEST_PK1}`, `0x${TEST_PK2}`,`${PRIVATE_KEY0}`, `${PRIVATE_KEY1}`],
+      chainId: 202206,
+    },
     dev: { url: 'http://localhost:8545' },
     // github action starts localgeth service, for gas calculations
     localgeth: { url: 'http://localgeth:8545' },
