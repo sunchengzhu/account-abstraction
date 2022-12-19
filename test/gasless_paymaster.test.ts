@@ -133,9 +133,9 @@ describe('Gasless EntryPoint with whitelist paymaster', function () {
       }
       // Send tx with a invalid user.
       await expect(entryPoint
-          .connect(invalidUser)
-          .callStatic
-          .handleOp(userOp, { gasLimit: 400000, gasPrice: 0 })
+        .connect(invalidUser)
+        .callStatic
+        .handleOp(userOp, { gasLimit: 400000, gasPrice: 0 })
       ).to.be.revertedWithCustomError(entryPoint, 'FailedOp')
         .withArgs(paymaster.address, 'Verifying user in whitelist.')
     })
