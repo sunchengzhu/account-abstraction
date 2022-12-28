@@ -5,7 +5,6 @@ import {
   GaslessDemoPaymaster,
   GaslessDemoPaymaster__factory,
   DummyContract,
-  GaslessAlwaysSuccessPaymaster,
   GaslessAlwaysSuccessPaymaster__factory
 } from '../typechain'
 import {
