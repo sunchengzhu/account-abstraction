@@ -4,7 +4,9 @@ import {
   GaslessEntryPoint,
   GaslessDemoPaymaster,
   GaslessDemoPaymaster__factory,
-  DummyContract
+  DummyContract,
+  GaslessAlwaysSuccessPaymaster,
+  GaslessAlwaysSuccessPaymaster__factory
 } from '../typechain'
 import {
   createWalletOwner,
@@ -51,14 +53,44 @@ describe('Gasless EntryPoint with whitelist paymaster', function () {
     console.log(`Paymaster: ${paymaster.address}`)
 
     await paymaster.addStake(99999999, { value: parseEther('0.02') })
-    console.log('add stake')
+    console.log('add stake for paymaster')
     await paymaster.addWhitelistAddress(whitelistUser.address)
-    console.log('add whitelist')
+    console.log('add whitelist for paymaster')
 
     await entryPoint.depositTo(paymaster.address, { value: parseEther('0.01') })
-    console.log('deposit to')
+    console.log('deposit to entrypoint for paymaster')
   })
   describe('#Whitelist', () => {
+    it('always success paymaster', async () => {
+      const alwaysSuccessPaymaster = await new GaslessAlwaysSuccessPaymaster__factory(walletOwner).deploy(entryPoint.address)
+      console.log(`Always Success Paymaster: ${alwaysSuccessPaymaster.address}`)
+      await alwaysSuccessPaymaster.addStake(99999999, { value: parseEther('0.02') })
+      console.log('add stake for alwaysSuccessPaymaster')
+      await entryPoint.depositTo(alwaysSuccessPaymaster.address, { value: parseEther('0.01') })
+      console.log('deposit to entrypoint for always success paymaster')
+
+      // Mock UserOp
+      const userOp: UserOperationStruct = {
+        callContract: dummyContract.address,
+        callData: dummyContractCallData,
+        callGasLimit: 100000,
+        verificationGasLimit: 100000,
+        maxFeePerGas: 1,
+        maxPriorityFeePerGas: 1,
+        paymasterAndData: hexConcat([alwaysSuccessPaymaster.address, '0x1234'])
+      }
+
+      // init state
+      const initSum = await dummyContract.sum()
+      expect(initSum).to.equal(1)
+      // Send tx with a valid user.
+      const tx = await entryPoint.connect(invalidUser).handleOp(userOp, { gasLimit: 400000, gasPrice: 0 })
+      await tx.wait()
+      // check state changed
+      const sum = await dummyContract.sum()
+      expect(sum).to.equal(2)
+    })
+
     it('whitelist valid', async () => {
       // Mock UserOp
       const userOp: UserOperationStruct = {
