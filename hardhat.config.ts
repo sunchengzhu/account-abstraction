@@ -77,9 +77,9 @@ const config: HardhatUserConfig = {
       chainId: 202206
     },
     gw_testnet_v1: {
-      url: `https://v1.testnet.godwoken.io/rpc/instant-finality-hack`,
+      url: 'https://v1.testnet.godwoken.io/rpc/instant-finality-hack',
       accounts: [`0x${TEST_PK1}`, `0x${TEST_PK2}`, `${PRIVATE_KEY0}`, `${PRIVATE_KEY1}`],
-      chainId: 71401,
+      chainId: 71401
     },
     dev: { url: 'http://localhost:8545' },
     // github action starts localgeth service, for gas calculations

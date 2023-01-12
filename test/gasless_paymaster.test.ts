@@ -1,4 +1,4 @@
-import { BigNumber, Contract, ContractFactory, Wallet } from 'ethers'
+import { BigNumber, BigNumberish, Contract, ContractFactory, Wallet } from 'ethers'
 import { ethers, network } from 'hardhat'
 import {
   GaslessEntryPoint,
@@ -8,6 +8,7 @@ import {
   GaslessAlwaysSuccessPaymaster__factory
 } from '../typechain'
 import {
+  connectGaslessEntryPoint,
   createWalletOwner,
   deployGaslessEntryPoint
 } from './testutils'
@@ -18,6 +19,28 @@ import { expect } from 'chai'
 import '@nomicfoundation/hardhat-chai-matchers'
 import { readFile } from 'fs/promises'
 import abi from '../erc20/abi.json'
+import fetch from 'node-fetch'
+
+async function getOrDeployEntrypointContract (fullnodeMiner: string, paymasterStake: BigNumberish, unstakeDelaySecs: BigNumberish): Promise<GaslessEntryPoint> {
+  if (network.name.startsWith('gw') && 'url' in network.config) {
+    const response = await fetch(network.config.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'poly_version',
+        params: [],
+        id: 42
+      })
+    })
+    const data = JSON.parse(await response.text())
+    const addr = data.result.nodeInfo.gaslessTx.entrypointAddress
+    return connectGaslessEntryPoint(addr)
+  }
+  return deployGaslessEntryPoint(fullnodeMiner, paymasterStake, unstakeDelaySecs)
+}
 
 describe('Gasless EntryPoint with whitelist paymaster', function () {
   let dummyContractCallData: string
@@ -40,7 +63,7 @@ describe('Gasless EntryPoint with whitelist paymaster', function () {
     const testTx = await dummyContract.populateTransaction.test(1, 1)
     dummyContractCallData = testTx.data ?? ''
 
-    entryPoint = await deployGaslessEntryPoint(fullnode.address, 1, 1)
+    entryPoint = await getOrDeployEntrypointContract(fullnode.address, 1, 1)
     // const entryPointAddr = "0xd16f6ec881e60038596c193b534c840455e66f47"
     // const entryPoint = GaslessEntryPoint__factory.connect(entryPointAddr, walletOwner)
     // 0xd16f6ec881e60038596c193b534c840455e66f47
@@ -51,7 +74,10 @@ describe('Gasless EntryPoint with whitelist paymaster', function () {
     paymaster = await new GaslessDemoPaymaster__factory(walletOwner).deploy(entryPoint.address)
     console.log(`Paymaster: ${paymaster.address}`)
 
-    await paymaster.addStake(99999999, { value: parseEther('0.02') })
+    const paymasterStake = await entryPoint.paymasterStake()
+    console.log(`min stake: ${paymasterStake.toString()}`)
+
+    await paymaster.addStake(99999999, { value: parseEther('1.1') })
     console.log('add stake for paymaster')
     await paymaster.addWhitelistAddress(whitelistUser.address)
     console.log('add whitelist for paymaster')
@@ -63,7 +89,7 @@ describe('Gasless EntryPoint with whitelist paymaster', function () {
     it('always success paymaster', async () => {
       const alwaysSuccessPaymaster = await new GaslessAlwaysSuccessPaymaster__factory(walletOwner).deploy(entryPoint.address)
       console.log(`Always Success Paymaster: ${alwaysSuccessPaymaster.address}`)
-      await alwaysSuccessPaymaster.addStake(99999999, { value: parseEther('0.02') })
+      await alwaysSuccessPaymaster.addStake(99999999, { value: parseEther('1.02') })
       console.log('add stake for alwaysSuccessPaymaster')
       await entryPoint.depositTo(alwaysSuccessPaymaster.address, { value: parseEther('0.01') })
       console.log('deposit to entrypoint for always success paymaster')
