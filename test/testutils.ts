@@ -256,6 +256,10 @@ export async function deployGaslessEntryPoint (fullnodeMiner: string, paymasterS
   return GaslessEntryPoint__factory.connect(addr, provider.getSigner())
 }
 
+export async function connectGaslessEntryPoint (addr: string, provider = ethers.provider): Promise<GaslessEntryPoint> {
+  return GaslessEntryPoint__factory.connect(addr, provider.getSigner())
+}
+
 export async function isDeployed (addr: string): Promise<boolean> {
   const code = await ethers.provider.getCode(addr)
   return code.length > 2
