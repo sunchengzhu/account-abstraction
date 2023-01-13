@@ -1,3 +1,20 @@
+```shell
+#安装依赖包
+yarn install
+
+#编译合约
+yarn hardhat compile
+
+#启用rpc日志功能
+yarn run addRpcLog
+#若需要关闭rpc日志功能，则执行以下命令
+rm -rf node_modules/hardhat && yarn install hardhat
+
+#让remix可以访问本地文件夹
+remixd -s contracts --remix-ide https://remix.ethereum.org
+```
+
+
 Implementation of contracts for [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) account abstraction via alternative mempool.
 
 # Resources
@@ -9,3 +26,5 @@ Implementation of contracts for [ERC-4337](https://eips.ethereum.org/EIPS/eip-43
 [Bundler reference implementation](https://github.com/eth-infinitism/bundler)
 
 [Bundler specification test suite](https://github.com/eth-infinitism/bundler-spec-tests)
+
+

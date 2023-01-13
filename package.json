@@ -21,7 +21,8 @@
     "check-gas-reports": "./scripts/check-gas-reports",
     "runop": "hardhat run src/runop.ts ",
     "runop-goerli": "AA_URL=https://account-abstraction-goerli.nethermind.io yarn runop --network goerli",
-    "runop3": "hardhat run src/runop3.ts "
+    "runop3": "hardhat run src/runop3.ts ",
+    "addRpcLog": "patch-package"
   },
   "keywords": [],
   "author": "",
@@ -62,6 +63,7 @@
     "ethereumjs-wallet": "^1.0.1",
     "hardhat-deploy": "^0.9.3",
     "hardhat-deploy-ethers": "^0.3.0-beta.11",
+    "patch-package": "^6.5.1",
     "solidity-coverage": "^0.7.18",
     "source-map-support": "^0.5.19",
     "table": "^6.8.0",

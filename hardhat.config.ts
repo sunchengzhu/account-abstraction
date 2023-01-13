@@ -10,7 +10,9 @@ import * as fs from 'fs'
 
 const mnemonicFileName = process.env.MNEMONIC_FILE ?? `${process.env.HOME}/.secret/testnet-mnemonic.txt`
 let mnemonic = 'test '.repeat(11) + 'junk'
-if (fs.existsSync(mnemonicFileName)) { mnemonic = fs.readFileSync(mnemonicFileName, 'ascii') }
+if (fs.existsSync(mnemonicFileName)) {
+  mnemonic = fs.readFileSync(mnemonicFileName, 'ascii')
+}
 
 function getNetwork1 (url: string): { url: string, accounts: { mnemonic: string } } {
   return {
@@ -27,7 +29,10 @@ function getNetwork (name: string): { url: string, accounts: { mnemonic: string 
 const optimizedComilerSettings = {
   version: '0.8.17',
   settings: {
-    optimizer: { enabled: true, runs: 1000000 },
+    optimizer: {
+      enabled: true,
+      runs: 1000000
+    },
     viaIR: true
   }
 }
@@ -40,7 +45,10 @@ const config: HardhatUserConfig = {
     compilers: [{
       version: '0.8.15',
       settings: {
-        optimizer: { enabled: true, runs: 1000000 }
+        optimizer: {
+          enabled: true,
+          runs: 1000000
+        }
       }
     }],
     overrides: {
@@ -48,6 +56,7 @@ const config: HardhatUserConfig = {
       'contracts/samples/SimpleAccount.sol': optimizedComilerSettings
     }
   },
+  defaultNetwork: 'dev',
   networks: {
     dev: { url: 'http://localhost:8545' },
     // github action starts localgeth service, for gas calculations

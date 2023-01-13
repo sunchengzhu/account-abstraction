@@ -1,0 +1,36 @@
+diff --git a/node_modules/hardhat/internal/core/providers/accounts.js b/node_modules/hardhat/internal/core/providers/accounts.js
+index 022afb1..800acf7 100644
+--- a/node_modules/hardhat/internal/core/providers/accounts.js
++++ b/node_modules/hardhat/internal/core/providers/accounts.js
+@@ -125,6 +125,16 @@ class LocalAccountsProvider extends chainId_1.ProviderWrapperWithChainId {
+             const privateKey = this._getPrivateKeyForAddress(txRequest.from);
+             const chainId = await this._getChainId();
+             const rawTransaction = await this._getSignedTransaction(txRequest, chainId, privateKey);
++            console.log("eth_sendRawTransaction:", JSON.parse(JSON.stringify(txRequest, (key, value) => {
++                    if (typeof value === 'bigint') {
++                        return value.toString()
++                    } else if (typeof value !== 'undefined' && (key === 'from' || key === 'to' || key === 'data')) {
++                        return '0x' + Buffer.from(value, 'hex').toString('hex')
++                    } else {
++                        return value
++                    }
++                }
++            )));
+             return this._wrappedProvider.request({
+                 method: "eth_sendRawTransaction",
+                 params: [bufferToHex(rawTransaction)],
+diff --git a/node_modules/hardhat/internal/core/providers/http.js b/node_modules/hardhat/internal/core/providers/http.js
+index 09e88c0..3e1ef67 100644
+--- a/node_modules/hardhat/internal/core/providers/http.js
++++ b/node_modules/hardhat/internal/core/providers/http.js
+@@ -50,6 +50,10 @@ class HttpProvider extends events_1.EventEmitter {
+         const error = new errors_2.ProviderError("HttpProviderError", -1);
+         const jsonRpcRequest = this._getJsonRpcRequest(args.method, args.params);
+         const jsonRpcResponse = await this._fetchJsonRpcResponse(jsonRpcRequest);
++        if (args.method != "eth_chainId") {
++            console.log("jsonRpcRequest:", jsonRpcRequest);
++            console.log("jsonRpcResponse:", jsonRpcResponse);
++        }
+         if (isErrorResponse(jsonRpcResponse)) {
+             error.message = jsonRpcResponse.error.message;
+             error.code = jsonRpcResponse.error.code;
