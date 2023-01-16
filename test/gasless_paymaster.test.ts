@@ -73,6 +73,9 @@ describe('Gasless EntryPoint with whitelist paymaster', function () {
 
     paymaster = await new GaslessDemoPaymaster__factory(walletOwner).deploy(entryPoint.address)
     console.log(`Paymaster: ${paymaster.address}`)
+    // add DummyContract to paymaster
+    await paymaster.addAvailAddr(dummyContract.address);
+
 
     const paymasterStake = await entryPoint.paymasterStake()
     console.log(`min stake: ${paymasterStake.toString()}`)
@@ -138,7 +141,35 @@ describe('Gasless EntryPoint with whitelist paymaster', function () {
       const sum = await dummyContract.sum()
       expect(sum).to.equal(2)
     })
-    it('whitelist valid with plain tx', async () => { // FIXME
+    it('make call to an invalid address', async () => {
+      // Deploy another DummyContract which is not valid in paymaster.
+      const DummyContract = await ethers.getContractFactory('DummyContract')
+      const invalidDummyContract = await DummyContract.deploy()
+      
+      // Mock UserOp
+      const userOp: UserOperationStruct = {
+        callContract: invalidDummyContract.address,
+        callData: dummyContractCallData,
+        callGasLimit: 100000,
+        verificationGasLimit: 100000,
+        maxFeePerGas: 1,
+        maxPriorityFeePerGas: 1,
+        paymasterAndData: hexConcat([paymaster.address, '0x1234'])
+      }
+
+      // init state
+      const initSum = await invalidDummyContract.sum()
+      expect(initSum).to.equal(1)
+      // Send tx with a valid user to an invalid address.
+      await expect(entryPoint
+        .connect(whitelistUser)
+        .callStatic
+        .handleOp(userOp, { gasLimit: 400000, gasPrice: 0 })
+      ).to.be.revertedWithCustomError(entryPoint, 'FailedOp')
+        .withArgs(paymaster.address, 'Verifying call address from user operation.')
+      
+    })
+    it('whitelist valid with plain tx', async () => {
       // Mock UserOp
       const userOp: UserOperationStruct = {
         callContract: dummyContract.address,
@@ -191,6 +222,28 @@ describe('Gasless EntryPoint with whitelist paymaster', function () {
       // Send tx with a invalid user.
       await expect(entryPoint
         .connect(invalidUser)
+        .callStatic
+        .handleOp(userOp, { gasLimit: 400000, gasPrice: 0 })
+      ).to.be.revertedWithCustomError(entryPoint, 'FailedOp')
+        .withArgs(paymaster.address, 'Verifying user in whitelist.')
+    })
+
+    it('remove from whitelist', async () => {
+      // Remove from whitelist.
+      await paymaster.removeWhitelistAddress(whitelistUser.address)
+      // Mock UserOp
+      const userOp: UserOperationStruct = {
+        callContract: dummyContract.address,
+        callData: dummyContractCallData,
+        callGasLimit: 100000,
+        verificationGasLimit: 100000,
+        maxFeePerGas: 1,
+        maxPriorityFeePerGas: 1,
+        paymasterAndData: hexConcat([paymaster.address, '0x1234'])
+      }
+      // Send tx with a invalid user.
+      await expect(entryPoint
+        .connect(whitelistUser)
         .callStatic
         .handleOp(userOp, { gasLimit: 400000, gasPrice: 0 })
       ).to.be.revertedWithCustomError(entryPoint, 'FailedOp')
