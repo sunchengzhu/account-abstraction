@@ -27,13 +27,17 @@ describe('DepositPaymaster', () => {
   let paymaster: DepositPaymaster
   before(async function () {
     entryPoint = await deployEntryPoint()
+    console.log(`entryPoint address: ${entryPoint.address}`)
 
     paymaster = await new DepositPaymaster__factory(ethersSigner).deploy(entryPoint.address)
+    console.log(`depositPaymaster address: ${paymaster.address}`)
     await paymaster.addStake(1, { value: parseEther('2') })
     await entryPoint.depositTo(paymaster.address, { value: parseEther('1') })
 
     token = await new TestToken__factory(ethersSigner).deploy()
+    console.log(`testToken address: ${token.address}`)
     const testOracle = await new TestOracle__factory(ethersSigner).deploy()
+    console.log(`testOracle address: ${testOracle.address}`)
     await paymaster.addToken(token.address, testOracle.address)
 
     await token.mint(await ethersSigner.getAddress(), FIVE_ETH)
@@ -48,6 +52,7 @@ describe('DepositPaymaster', () => {
     })
     it('should deposit and read balance', async () => {
       await paymaster.addDepositFor(token.address, account.address, 100)
+      console.log(`account address: ${account.address}`)
       expect(await paymaster.depositInfo(token.address, account.address)).to.eql({ amount: 100 })
     })
     it('should fail to withdraw without unlock', async () => {
