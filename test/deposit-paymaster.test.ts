@@ -50,9 +50,11 @@ describe('DepositPaymaster', () => {
     before(async () => {
       ({ proxy: account } = await createAccount(ethersSigner, await ethersSigner.getAddress(), entryPoint.address))
     })
+    it('just before', async () => {
+
+    })
     it('should deposit and read balance', async () => {
       await paymaster.addDepositFor(token.address, account.address, 100)
-      console.log(`account address: ${account.address}`)
       expect(await paymaster.depositInfo(token.address, account.address)).to.eql({ amount: 100 })
     })
     it('should fail to withdraw without unlock', async () => {

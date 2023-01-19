@@ -46,7 +46,10 @@ export async function fund (contractOrAddress: string | Contract, amountEth = '1
   } else {
     address = contractOrAddress.address
   }
-  await ethers.provider.getSigner().sendTransaction({ to: address, value: parseEther(amountEth) })
+  await ethers.provider.getSigner().sendTransaction({
+    to: address,
+    value: parseEther(amountEth)
+  })
 }
 
 export async function getBalance (address: string): Promise<number> {
@@ -81,7 +84,10 @@ export function callDataCost (data: string): number {
 export async function calcGasUsage (rcpt: ContractReceipt, entryPoint: EntryPoint, beneficiaryAddress?: string): Promise<{ actualGasCost: BigNumberish }> {
   const actualGas = await rcpt.gasUsed
   const logs = await entryPoint.queryFilter(entryPoint.filters.UserOperationEvent(), rcpt.blockHash)
-  const { actualGasCost, actualGasUsed } = logs[0].args
+  const {
+    actualGasCost,
+    actualGasUsed
+  } = logs[0].args
   console.log('\t== actual gasUsed (from tx receipt)=', actualGas.toString())
   console.log('\t== calculated gasUsed (paid to beneficiary)=', actualGasUsed)
   const tx = await ethers.provider.getTransaction(rcpt.transactionHash)
@@ -193,8 +199,14 @@ export async function checkForGeth (): Promise<void> {
   // --allow-insecure-unlock
   if (currentNode.match(/geth/i) != null) {
     for (let i = 0; i < 2; i++) {
-      const acc = await provider.request({ method: 'personal_newAccount', params: ['pass'] }).catch(rethrow)
-      await provider.request({ method: 'personal_unlockAccount', params: [acc, 'pass'] }).catch(rethrow)
+      const acc = await provider.request({
+        method: 'personal_newAccount',
+        params: ['pass']
+      }).catch(rethrow)
+      await provider.request({
+        method: 'personal_unlockAccount',
+        params: [acc, 'pass']
+      }).catch(rethrow)
       await fund(acc, '10')
     }
   }
@@ -217,7 +229,10 @@ export function objdump (obj: { [key: string]: any }): any {
 export async function checkForBannedOps (txHash: string, checkPaymaster: boolean): Promise<void> {
   const tx = await debugTransaction(txHash)
   const logs = tx.structLogs
-  const blockHash = logs.map((op, index) => ({ op: op.op, index })).filter(op => op.op === 'NUMBER')
+  const blockHash = logs.map((op, index) => ({
+    op: op.op,
+    index
+  })).filter(op => op.op === 'NUMBER')
   expect(blockHash.length).to.equal(2, 'expected exactly 2 call to NUMBER (Just before and after validateUserOperation)')
   const validateAccountOps = logs.slice(0, blockHash[0].index - 1)
   const validatePaymasterOps = logs.slice(blockHash[0].index + 1)
@@ -297,9 +312,12 @@ export async function createAccount (
     implementation: string
   }> {
   const accountFactory = _factory ?? await new SimpleAccountFactory__factory(ethersSigner).deploy(entryPoint)
+  console.log(`accountFactory address: ${accountFactory.address}`)
   const implementation = await accountFactory.accountImplementation()
+  console.log(`accountOwner address: ${accountOwner}`)
   await accountFactory.createAccount(accountOwner, 0)
   const accountAddress = await accountFactory.getAddress(accountOwner, 0)
+  console.log(`account address: ${accountAddress}`)
   const proxy = SimpleAccount__factory.connect(accountAddress, ethersSigner)
   return {
     implementation,
